@@ -2,13 +2,13 @@
 
 Summary:	GNU Compiler Collection: the C compiler and shared files
 Name:		gcc
-Version:	4.7.1
-Release:	5
+Version:	4.7.2
+Release:	1
 Epoch:		6
 License:	GPL v3+
 Group:		Development/Languages
 Source0:	ftp://gcc.gnu.org/pub/gcc/releases/gcc-%{version}/%{name}-%{version}.tar.bz2
-# Source0-md5:	933e6f15f51c031060af64a9e14149ff
+# Source0-md5:	cc308a0891e778cfda7a151ab8a6e762
 Source10:	gcc-optimize-la.pl
 URL:		http://gcc.gnu.org/
 BuildRequires:	autoconf
@@ -16,7 +16,7 @@ BuildRequires:	automake
 BuildRequires:	binutils
 BuildRequires:	bison
 BuildRequires:	chrpath
-BuildRequires:	fileutils
+BuildRequires:	coreutils
 BuildRequires:	flex
 BuildRequires:	gettext-devel
 BuildRequires:	glibc-devel
