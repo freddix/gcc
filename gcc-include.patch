@@ -1,0 +1,12 @@
+diff -aurN gcc-4.7.2.orig/gcc/config/host-linux.c gcc-4.7.2/gcc/config/host-linux.c
+--- gcc-4.7.2.orig/gcc/config/host-linux.c	2012-10-16 13:39:20.116684650 +0200
++++ gcc-4.7.2/gcc/config/host-linux.c	2012-10-16 13:39:40.801480646 +0200
+@@ -22,7 +22,7 @@
+ #include "coretypes.h"
+ #include "hosthooks.h"
+ #include "hosthooks-def.h"
+-
++#include <bits/posix1_lim.h>
+ 
+ /* Linux has a feature called exec-shield-randomize that perturbs the
+    address of non-fixed mapped segments by a (relatively) small amount.
