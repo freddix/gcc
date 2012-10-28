@@ -3,14 +3,25 @@
 Summary:	GNU Compiler Collection: the C compiler and shared files
 Name:		gcc
 Version:	4.7.2
-Release:	3
+Release:	5
 Epoch:		6
 License:	GPL v3+
 Group:		Development/Languages
 Source0:	ftp://gcc.gnu.org/pub/gcc/releases/gcc-%{version}/%{name}-%{version}.tar.bz2
 # Source0-md5:	cc308a0891e778cfda7a151ab8a6e762
+%if 0
+# for cross build
+Source1:	http://www.mpfr.org/mpfr-current/mpfr-3.1.1.tar.xz
+# Source1-md5:	91d51c41fcf2799e4ee7a7126fc95c17
+Source2:	ftp://ftp.gnu.org/gnu/gmp/gmp-5.0.5.tar.xz
+# Source2-md5:	8aef50959acec2a1ad41d144ffe0f3b5
+Source3:	http://multiprecision.org/mpc/download/mpc-1.0.1.tar.gz
+# Source3-md5:	b32a2e1a3daa392372fbd586d1ed3679
+%endif
 Source10:	gcc-optimize-la.pl
-Patch0:		%{name}-pr53663.patch
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=21704
+Patch0:		%{name}-include.patch
+Patch1:		%{name}-pr53663.patch
 URL:		http://gcc.gnu.org/
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -19,7 +30,7 @@ BuildRequires:	bison
 BuildRequires:	chrpath
 BuildRequires:	coreutils
 BuildRequires:	flex
-BuildRequires:	gettext-devel
+BuildRequires:	gettext
 BuildRequires:	glibc-devel
 BuildRequires:	gmp-devel
 BuildRequires:	mpc-devel
@@ -236,6 +247,20 @@ needed for __float128 math support and for Fortran REAL*16 support.
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
+
+%if 0
+# cross build
+# undefined reference to `__stack_chk_guard'
+sed -i '/k prot/agcc_cv_libc_provides_ssp=yes' gcc/configure
+
+tar -xf %{SOURCE1}
+mv mpfr-3.1.1 mpfr
+tar -xf %{SOURCE2}
+mv gmp-5.0.5 gmp
+tar -xf %{SOURCE3}
+mv mpc-1.0.1 mpc
+%endif
 
 # override snapshot version.
 echo %{version} > gcc/BASE-VER
@@ -259,7 +284,7 @@ TEXCONFIG=false			\
 	--prefix=%{_prefix}						\
 	--with-gxx-include-dir=%{_includedir}/c++/%{version}		\
 	--with-local-prefix=%{_prefix}/local				\
-	--with-slibdir=%{_slibdir}					\
+	--with-slibdir=%{_libdir}					\
 	--x-libraries=%{_libdir}					\
 	--disable-build-poststage1-with-cxx                             \
 	--disable-build-with-cxx                                        \
@@ -275,6 +300,7 @@ TEXCONFIG=false			\
 	--enable-gnu-unique-object					\
 	--enable-languages="c,c++,fortran"				\
 	--enable-ld=default						\
+	--enable-libgomp						\
 	--enable-libstdcxx-allocator=new				\
 	--enable-libstdcxx-time						\
 	--enable-linker-build-id					\
@@ -290,6 +316,11 @@ TEXCONFIG=false			\
 	--with-pkgversion="Freddix"					\
 	--with-system-zlib						\
 	--without-x
+%if 0
+	--with-mpfr-include=$(pwd)/../mpfr/src	\
+	--with-mpfr-lib=$(pwd)/mpfr/src/.libs
+%endif
+
 cd ..
 
 %{__make} -C build 				\
@@ -391,7 +422,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/gcc-nm
 %attr(755,root,root) %{_bindir}/gcc-ranlib
 %attr(755,root,root) %{_bindir}/gcov
-%attr(755,root,root) %{_libdir}/lib*.so
+%attr(755,root,root) %{_slibdir}/libgcc_s.so
+%attr(755,root,root) %{_libdir}/libitm.so
 %attr(755,root,root) %{gcclibdir}/collect2
 %attr(755,root,root) %{gcclibdir}/liblto_plugin.so*
 %attr(755,root,root) %{gcclibdir}/lto-wrapper
