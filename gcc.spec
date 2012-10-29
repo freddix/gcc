@@ -199,6 +199,7 @@ Static C++ standard library.
 Summary:	Fortran 95 support for gcc
 Group:		Development/Languages/Fortran
 Requires:	libgfortran = %{epoch}:%{version}-%{release}
+Requires:	libquadmath-devel = %{epoch}:%{version}-%{release}
 Provides:	gcc-g77 = %{epoch}:%{version}-%{release}
 Obsoletes:	gcc-g77
 
