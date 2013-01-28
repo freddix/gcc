@@ -3,7 +3,7 @@
 Summary:	GNU Compiler Collection: the C compiler and shared files
 Name:		gcc
 Version:	4.7.2
-Release:	5
+Release:	6
 Epoch:		6
 License:	GPL v3+
 Group:		Development/Languages
