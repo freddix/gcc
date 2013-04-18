@@ -2,13 +2,13 @@
 
 Summary:	GNU Compiler Collection: the C compiler and shared files
 Name:		gcc
-Version:	4.7.2
-Release:	6
+Version:	4.7.3
+Release:	1
 Epoch:		6
 License:	GPL v3+
 Group:		Development/Languages
 Source0:	ftp://gcc.gnu.org/pub/gcc/releases/gcc-%{version}/%{name}-%{version}.tar.bz2
-# Source0-md5:	cc308a0891e778cfda7a151ab8a6e762
+# Source0-md5:	86f428a30379bdee0224e353ee2f999e
 %if 0
 # for cross build
 Source1:	http://www.mpfr.org/mpfr-current/mpfr-3.1.1.tar.xz
@@ -21,7 +21,6 @@ Source3:	http://multiprecision.org/mpc/download/mpc-1.0.1.tar.gz
 Source10:	gcc-optimize-la.pl
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=21704
 Patch0:		%{name}-include.patch
-Patch1:		%{name}-pr53663.patch
 URL:		http://gcc.gnu.org/
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -248,7 +247,6 @@ needed for __float128 math support and for Fortran REAL*16 support.
 %prep
 %setup -q
 %patch0 -p1
-%patch1 -p1
 
 %if 0
 # cross build
