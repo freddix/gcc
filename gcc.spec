@@ -2,13 +2,13 @@
 
 Summary:	GNU Compiler Collection: the C compiler and shared files
 Name:		gcc
-Version:	4.7.3
-Release:	2
+Version:	4.8.2
+Release:	1
 Epoch:		6
 License:	GPL v3+
 Group:		Development/Languages
 Source0:	ftp://gcc.gnu.org/pub/gcc/releases/gcc-%{version}/%{name}-%{version}.tar.bz2
-# Source0-md5:	86f428a30379bdee0224e353ee2f999e
+# Source0-md5:	a3d7d63b9cb6b6ea049469a0c4a43c9d
 %if 0
 # for cross build
 Source1:	http://www.mpfr.org/mpfr-current/mpfr-3.1.1.tar.xz
@@ -21,12 +21,14 @@ Source3:	http://multiprecision.org/mpc/download/mpc-1.0.1.tar.gz
 Source10:	gcc-optimize-la.pl
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=21704
 Patch0:		%{name}-include.patch
+Patch1:		%{name}-filename-output.patch
 URL:		http://gcc.gnu.org/
 BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	binutils
 BuildRequires:	bison
 BuildRequires:	chrpath
+BuildRequires:	cloog-devel
 BuildRequires:	coreutils
 BuildRequires:	flex
 BuildRequires:	gettext
@@ -46,7 +48,7 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		filterout	-fwrapv -fno-strict-aliasing -fsigned-char
 # FIXME: unresolved symbols
-%define		skip_post_check_so	libmudflap.so.0.0.0 libmudflapth.so.0.0.0
+%define		skip_post_check_so	'.*(libgo|libmudflap|libmudflapth)\.so.*'
 
 %description
 A compiler aimed at integrating all the optimizations and features
@@ -72,7 +74,6 @@ constructs.
 Summary:	Shared gcc library
 License:	GPL v2+ with unlimited link permission
 Group:		Libraries
-Obsoletes:	libgcc4
 
 %description -n libgcc
 Shared gcc library.
@@ -149,7 +150,6 @@ libraries.
 Summary:	C++ support for gcc
 Group:		Development/Languages
 Requires:	%{name} = %{epoch}:%{version}-%{release}
-Obsoletes:	gcc4-c++
 
 %description c++
 This package adds C++ support to the GNU Compiler Collection. It
@@ -163,7 +163,6 @@ License:	GPL v2+ with free software exception
 Group:		Libraries
 # >= instead of = to allow keeping older libstdc++ (with different soname)
 Requires:	libgcc >= %{epoch}:%{version}-%{release}
-Obsoletes:	libstdc++4
 
 %description -n libstdc++
 This is the GNU implementation of the standard C++ libraries, along
@@ -177,7 +176,6 @@ Group:		Development/Libraries
 Requires:	%{name}-c++ = %{epoch}:%{version}-%{release}
 Requires:	glibc-devel
 Requires:	libstdc++ = %{epoch}:%{version}-%{release}
-Obsoletes:	libstdc++4-devel
 
 %description -n libstdc++-devel
 This is the GNU implementation of the standard C++ libraries. This
@@ -189,7 +187,6 @@ Summary:	Static C++ standard library
 License:	GPL v2+ with free software exception
 Group:		Development/Libraries
 Requires:	libstdc++-devel = %{epoch}:%{version}-%{release}
-Obsoletes:	libstdc++4-static
 
 %description -n libstdc++-static
 Static C++ standard library.
@@ -200,7 +197,6 @@ Group:		Development/Languages/Fortran
 Requires:	libgfortran = %{epoch}:%{version}-%{release}
 Requires:	libquadmath-devel = %{epoch}:%{version}-%{release}
 Provides:	gcc-g77 = %{epoch}:%{version}-%{release}
-Obsoletes:	gcc-g77
 
 %description fortran
 This package adds support for compiling Fortran 95 programs with the
@@ -210,20 +206,9 @@ GNU compiler.
 Summary:	Fortran 95 Libraries
 License:	GPL v2+ with unlimited link permission
 Group:		Libraries
-Obsoletes:	libg2c
 
 %description -n libgfortran
 Fortran 95 Libraries.
-
-%package -n libgfortran-static
-Summary:	Static Fortran 95 Libraries
-License:	GPL v2+ with unlimited link permission
-Group:		Development/Libraries
-Requires:	libgfortran = %{epoch}:%{version}-%{release}
-Obsoletes:	libg2c-static
-
-%description -n libgfortran-static
-Static Fortran 95 Libraries.
 
 %package -n libquadmath
 Summary:	GCC __float128 shared support library
@@ -244,14 +229,93 @@ Requires:	libquadmath = %{epoch}:%{version}-%{release}
 This package contains header files for GCC support library which is
 needed for __float128 math support and for Fortran REAL*16 support.
 
+%package go
+Summary:	Go language support for gcc
+License:	GPL v3+ (gcc), BSD (Go-specific part)
+Group:		Development/Languages
+Requires:	%{name} = %{epoch}:%{version}-%{release}
+Requires:	libgo-devel = %{epoch}:%{version}-%{release}
+
+%description go
+This package adds Go language support to the GNU Compiler Collection.
+
+%package -n libgo
+Summary:	Go language library
+License:	BSD
+Group:		Libraries
+Requires:	libgcc >= %{epoch}:%{version}-%{release}
+
+%description -n libgo
+Go language library.
+
+%package -n libgo-devel
+Summary:	Development files for Go language library
+License:	BSD
+Group:		Development/Libraries
+Requires:	glibc-devel
+Requires:	libgo = %{epoch}:%{version}-%{release}
+
+%description -n libgo-devel
+Development files for Go language library.
+
+%package -n libasan
+Summary:	The Address Sanitizer library
+Group:		Libraries
+
+%description -n libasan
+This package contains the Address Sanitizer library
+which is used for -fsanitize=address instrumented programs.
+
+%package -n libasan-devel
+Summary:	Development files for the Address Sanitizer library
+Group:		Development/Libraries
+Requires:	libasan = %{epoch}:%{version}-%{release}
+
+%description -n libasan-devel
+This package contains development files for the Address Sanitizer
+library.
+
+%package -n libtsan
+Summary:	The Thread Sanitizer library
+Group:		Libraries
+
+%description -n libtsan
+This package contains the Thread Sanitizer library
+which is used for -fsanitize=thread instrumented programs.
+
+%package -n libtsan-devel
+Summary:	Development files for the Thread Sanitizer library
+Group:		Development/Libraries
+Requires:	libtsan = %{epoch}:%{version}-%{release}
+
+%description -n libtsan-devel
+This package contains development files for Thread Sanitizer library.
+
+%package -n libatomic
+Summary:	The GNU Atomic library
+Group:		Libraries
+
+%description -n libatomic
+This package contains the GNU Atomic library which is a GCC support
+library for atomic operations not supported by hardware.
+
+%package -n libatomic-devel
+Summary:	Development files for the GNU Atomic library
+Group:		Development/Libraries
+Requires:	libatomic = %{epoch}:%{version}-%{release}
+
+%description -n libatomic-devel
+This package contains development files for the GNU Atomic libraries.
+
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p0
 
 %if 0
 # cross build
 # undefined reference to `__stack_chk_guard'
-sed -i '/k prot/agcc_cv_libc_provides_ssp=yes' gcc/configure
+%{__sed} -i '/k prot/agcc_cv_libc_provides_ssp=yes' gcc/configure
 
 tar -xf %{SOURCE1}
 mv mpfr-3.1.1 mpfr
@@ -264,6 +328,9 @@ mv mpc-1.0.1 mpc
 # override snapshot version.
 echo %{version} > gcc/BASE-VER
 echo "release" > gcc/DEV-PHASE
+
+# Do not run fixincludes
+%{__sed} -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in
 
 %build
 cp -f %{_datadir}/automake/config.* .
@@ -288,6 +355,8 @@ TEXCONFIG=false			\
 	--disable-build-poststage1-with-cxx                             \
 	--disable-build-with-cxx                                        \
 	--disable-cld                                                   \
+	--disable-cloog-version-check					\
+	--disable-install-libiberty					\
 	--disable-libssp                                                \
 	--disable-libstdcxx-pch                                         \
 	--disable-libunwind-exceptions                                  \
@@ -296,14 +365,14 @@ TEXCONFIG=false			\
 	--enable-__cxa_atexit						\
 	--enable-checking=release					\
 	--enable-clocale=gnu						\
+	--enable-cloog-backend=isl					\
 	--enable-gnu-unique-object					\
-	--enable-languages="c,c++,fortran"				\
+	--enable-languages="c,c++,fortran,go"				\
 	--enable-ld=default						\
 	--enable-libgomp						\
 	--enable-libstdcxx-allocator=new				\
 	--enable-libstdcxx-time						\
 	--enable-linker-build-id					\
-	--enable-linux-futex						\
 	--enable-lto							\
 	--enable-nls							\
 	--enable-shared							\
@@ -350,7 +419,12 @@ echo ".so gfortran.1" > $RPM_BUILD_ROOT%{_mandir}/man1/g95.1
 # avoid -L poisoning in *.la. normalize libdir
 # to avoid propagation of unnecessary RPATHs by libtool
 for f in \
+%ifnarch %{ix86}
+	libtsan.la	\
+%endif
+	libatomic.la	\
 	libgfortran.la	\
+	libgo.la	\
 	libgomp.la	\
 	libitm.la	\
 	libmudflap.la	\
@@ -379,10 +453,10 @@ install libstdc++-v3/include/precompiled/* $RPM_BUILD_ROOT%{_includedir}
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%post -p /usr/sbin/postshell
+%post	-p /usr/sbin/postshell
 -/usr/sbin/fix-info-dir -c %{_infodir}
 
-%postun -p /usr/sbin/postshell
+%postun	-p /usr/sbin/postshell
 -/usr/sbin/fix-info-dir -c %{_infodir}
 
 %post	-n cpp -p /usr/sbin/postshell
@@ -397,6 +471,12 @@ rm -rf $RPM_BUILD_ROOT
 %postun fortran -p /usr/sbin/postshell
 -/usr/sbin/fix-info-dir -c %{_infodir}
 
+%post	go -p /usr/sbin/postshell
+-/usr/sbin/fix-info-dir -c %{_infodir}
+
+%postun	go -p /usr/sbin/postshell
+-/usr/sbin/fix-info-dir -c %{_infodir}
+
 %post	-p /usr/sbin/ldconfig -n libgcc
 %postun	-p /usr/sbin/ldconfig -n libgcc
 %post	-p /usr/sbin/ldconfig -n libgomp
@@ -409,6 +489,14 @@ rm -rf $RPM_BUILD_ROOT
 %postun	-p /usr/sbin/ldconfig -n libgfortran
 %post	-p /usr/sbin/ldconfig -n libquadmath
 %postun	-p /usr/sbin/ldconfig -n libquadmath
+%post	-p /usr/sbin/ldconfig -n libgo
+%postun	-p /usr/sbin/ldconfig -n libgo
+%post	-p /usr/sbin/ldconfig -n libasan
+%postun	-p /usr/sbin/ldconfig -n libasan
+%post	-p /usr/sbin/ldconfig -n libtsan
+%postun	-p /usr/sbin/ldconfig -n libtsan
+%post	-p /usr/sbin/ldconfig -n libatomic
+%postun	-p /usr/sbin/ldconfig -n libatomic
 
 %files -f gcc.lang
 %defattr(644,root,root,755)
@@ -556,10 +644,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libgfortran.so.?
 %attr(755,root,root) %{_libdir}/libgfortran.so.*.*.*
 
-%files -n libgfortran-static
-%defattr(644,root,root,755)
-%{_libdir}/libgfortran.a
-
 %files -n libquadmath
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libquadmath.so.*.*.*
@@ -571,4 +655,62 @@ rm -rf $RPM_BUILD_ROOT
 %{gcclibdir}/include/quadmath_weak.h
 %attr(755,root,root) %{_libdir}/libquadmath.so
 %{_libdir}/libquadmath.la
+
+%files go
+%defattr(644,root,root,755)
+%doc gcc/go/gofrontend/{LICENSE,PATENTS,README}
+%attr(755,root,root) %{_bindir}/gccgo
+%attr(755,root,root) %{gcclibdir}/go1
+%dir %{_libdir}/go
+%{_libdir}/go/%{version}
+%{_mandir}/man1/gccgo.1*
+%{_infodir}/gccgo.info*
+
+%files -n libgo
+%defattr(644,root,root,755)
+%doc libgo/{LICENSE,PATENTS,README}
+%attr(755,root,root) %ghost %{_libdir}/libgo.so.4
+%attr(755,root,root) %{_libdir}/libgo.so.*.*.*
+
+%files -n libgo-devel
+%defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/libgo.so
+%{_libdir}/libgo.la
+%{_libdir}/libgobegin.a
+
+%files -n libasan
+%defattr(644,root,root,755)
+%doc libsanitizer/ChangeLog* libsanitizer/LICENSE.TXT
+%attr(755,root,root) %ghost %{_libdir}/libasan.so.0
+%attr(755,root,root) %{_libdir}/libasan.so.*.*.*
+
+%files -n libasan-devel
+%defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/libasan.so
+%{_libdir}/libasan_preinit.o
+%{_libdir}/libasan.la
+
+%ifnarch %{ix86}
+%files -n libtsan
+%defattr(644,root,root,755)
+%doc libsanitizer/ChangeLog* libsanitizer/LICENSE.TXT
+%attr(755,root,root) %ghost %{_libdir}/libtsan.so.0
+%attr(755,root,root) %{_libdir}/libtsan.so.*.*.*
+
+%files -n libtsan-devel
+%defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/libtsan.so
+%{_libdir}/libtsan.la
+%endif
+
+%files -n libatomic
+%defattr(644,root,root,755)
+%doc libatomic/ChangeLog*
+%attr(755,root,root) %{_libdir}/libatomic.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libatomic.so.1
+
+%files -n libatomic-devel
+%defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/libatomic.so
+%{_libdir}/libatomic.la
 
