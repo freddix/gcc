@@ -1,14 +1,17 @@
 %bcond_with	bootstrap
 
+%define		snap	20140206
+
 Summary:	GNU Compiler Collection: the C compiler and shared files
 Name:		gcc
 Version:	4.8.2
-Release:	2
+Release:	3.%{snap}.1
 Epoch:		6
 License:	GPL v3+
 Group:		Development/Languages
-Source0:	ftp://gcc.gnu.org/pub/gcc/releases/gcc-%{version}/%{name}-%{version}.tar.bz2
-# Source0-md5:	a3d7d63b9cb6b6ea049469a0c4a43c9d
+#Source0:	ftp://gcc.gnu.org/pub/gcc/releases/gcc-%{version}/%{name}-%{version}.tar.bz2
+Source0:	ftp://gcc.gnu.org/pub/gcc/snapshots/4.8-%{snap}/%{name}-4.8-%{snap}.tar.bz2
+# Source0-md5:	9d35549404a2326540fb88301ebd1977
 %if 0
 # for cross build
 Source1:	http://www.mpfr.org/mpfr-current/mpfr-3.1.1.tar.xz
@@ -308,7 +311,7 @@ Requires:	libatomic = %{epoch}:%{version}-%{release}
 This package contains development files for the GNU Atomic libraries.
 
 %prep
-%setup -q
+%setup -qn %{name}-4.8-%{snap}
 %patch0 -p1
 %patch1 -p0
 
@@ -500,7 +503,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -f gcc.lang
 %defattr(644,root,root,755)
-%doc ChangeLog MAINTAINERS NEWS
+%doc ChangeLog MAINTAINERS
 %doc gcc/{ChangeLog,ONEWS,README.Portability}
 %attr(755,root,root) %{_bindir}/*-gcc*
 %attr(755,root,root) %{_bindir}/cc
