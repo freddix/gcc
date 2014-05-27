@@ -1,17 +1,18 @@
 %bcond_with	bootstrap
 
-%define		snap	20140206
+%define		mver	4.9
+%define		snap	20140521
 
 Summary:	GNU Compiler Collection: the C compiler and shared files
 Name:		gcc
-Version:	4.8.2
-Release:	3.%{snap}.1
+Version:	4.9.0
+Release:	1.%{snap}.0
 Epoch:		6
 License:	GPL v3+
 Group:		Development/Languages
 #Source0:	ftp://gcc.gnu.org/pub/gcc/releases/gcc-%{version}/%{name}-%{version}.tar.bz2
-Source0:	ftp://gcc.gnu.org/pub/gcc/snapshots/4.8-%{snap}/%{name}-4.8-%{snap}.tar.bz2
-# Source0-md5:	9d35549404a2326540fb88301ebd1977
+Source0:	ftp://gcc.gnu.org/pub/gcc/snapshots/%{mver}-%{snap}/%{name}-%{mver}-%{snap}.tar.bz2
+# Source0-md5:	cd3cbe93ebc7207bf65d30e3c9a74a26
 %if 0
 # for cross build
 Source1:	http://www.mpfr.org/mpfr-current/mpfr-3.1.1.tar.xz
@@ -51,7 +52,7 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		filterout	-fwrapv -fno-strict-aliasing -fsigned-char
 # FIXME: unresolved symbols
-%define		skip_post_check_so	'.*(libgo|libmudflap|libmudflapth)\.so.*'
+%define		skip_post_check_so	'.*(libgo)\.so.*'
 
 %description
 A compiler aimed at integrating all the optimizations and features
@@ -107,47 +108,7 @@ Requires:	libgomp-devel = %{epoch}:%{version}-%{release}
 %description -n libgomp-static
 Static GNU OpenMP library.
 
-%package -n libmudflap
-Summary:	GCC mudflap shared support library
-License:	GPL v2+ with unlimited link permission
 Group:		Libraries
-
-%description -n libmudflap
-The libmudflap libraries are used by GCC for instrumenting pointer and
-array dereferencing operations.
-
-%package -n libmudflap-devel
-Summary:	Development files for GCC mudflap library
-License:	GPL v2+ with unlimited link permission
-Group:		Development/Libraries
-Requires:	libmudflap = %{epoch}:%{version}-%{release}
-
-%description -n libmudflap-devel
-The libmudflap libraries are used by GCC for instrumenting pointer and
-array dereferencing operations. This package contains development
-files.
-
-%package -n libmudflap-multilib-devel
-Summary:	Development files for GCC mudflap library
-License:	GPL v2+ with unlimited link permission
-Group:		Development/Libraries
-Requires:	libmudflap-devel = %{epoch}:%{version}-%{release}
-
-%description -n libmudflap-multilib-devel
-The libmudflap libraries are used by GCC for instrumenting pointer and
-array dereferencing operations. This package contains development
-files.
-
-%package -n libmudflap-static
-Summary:	Static GCC mudflap library
-License:	GPL v2+ with unlimited link permission
-Group:		Development/Libraries
-Requires:	libmudflap-devel = %{epoch}:%{version}-%{release}
-
-%description -n libmudflap-static
-The libmudflap libraries are used by GCC for instrumenting pointer and
-array dereferencing operations. This package contains static
-libraries.
 
 %package c++
 Summary:	C++ support for gcc
@@ -278,6 +239,23 @@ Requires:	libasan = %{epoch}:%{version}-%{release}
 This package contains development files for the Address Sanitizer
 library.
 
+%package -n liblsan
+Summary:	The Address Sanitizer library
+Group:		Libraries
+
+%description -n liblsan
+This package contains the Address Sanitizer library
+which is used for -fsanitize=address instrumented programs.
+
+%package -n liblsan-devel
+Summary:	Development files for the Address Sanitizer library
+Group:		Development/Libraries
+Requires:	liblsan = %{epoch}:%{version}-%{release}
+
+%description -n liblsan-devel
+This package contains development files for the Address Sanitizer
+library.
+
 %package -n libtsan
 Summary:	The Thread Sanitizer library
 Group:		Libraries
@@ -293,6 +271,23 @@ Requires:	libtsan = %{epoch}:%{version}-%{release}
 
 %description -n libtsan-devel
 This package contains development files for Thread Sanitizer library.
+
+%package -n libubsan
+Summary:	The Address Sanitizer library
+Group:		Libraries
+
+%description -n libubsan
+This package contains the Address Sanitizer library
+which is used for -fsanitize=address instrumented programs.
+
+%package -n libubsan-devel
+Summary:	Development files for the Address Sanitizer library
+Group:		Development/Libraries
+Requires:	libubsan = %{epoch}:%{version}-%{release}
+
+%description -n libubsan-devel
+This package contains development files for the Address Sanitizer
+library.
 
 %package -n libatomic
 Summary:	The GNU Atomic library
@@ -310,8 +305,40 @@ Requires:	libatomic = %{epoch}:%{version}-%{release}
 %description -n libatomic-devel
 This package contains development files for the GNU Atomic libraries.
 
+%package -n libcilkrts
+Summary:	The GNU cilkrts library
+Group:		Libraries
+
+%description -n libcilkrts
+This package contains the GNU cilkrts library which is a GCC support
+library for cilkrts operations not supported by hardware.
+
+%package -n libcilkrts-devel
+Summary:	Development files for the GNU cilkrts library
+Group:		Development/Libraries
+Requires:	libcilkrts = %{epoch}:%{version}-%{release}
+
+%description -n libcilkrts-devel
+This package contains development files for the GNU cilkrts libraries.
+
+%package -n libvtv
+Summary:	The GNU vtv library
+Group:		Libraries
+
+%description -n libvtv
+This package contains the GNU vtv library which is a GCC support
+library for vtv operations not supported by hardware.
+
+%package -n libvtv-devel
+Summary:	Development files for the GNU vtv library
+Group:		Development/Libraries
+Requires:	libvtv = %{epoch}:%{version}-%{release}
+
+%description -n libvtv-devel
+This package contains development files for the GNU vtv libraries.
+
 %prep
-%setup -qn %{name}-4.8-%{snap}
+%setup -qn %{name}-%{mver}-%{snap}
 %patch0 -p1
 %patch1 -p0
 
@@ -424,17 +451,20 @@ echo ".so gfortran.1" > $RPM_BUILD_ROOT%{_mandir}/man1/g95.1
 for f in \
 %ifnarch %{ix86}
 	libtsan.la	\
+	liblsan.la	\
 %endif
+	libasan.la	\
 	libatomic.la	\
+	libcilkrts.la	\
 	libgfortran.la	\
 	libgo.la	\
 	libgomp.la	\
 	libitm.la	\
-	libmudflap.la	\
-	libmudflapth.la	\
 	libquadmath.la	\
 	libstdc++.la	\
-	libsupc++.la
+	libsupc++.la	\
+	libubsan.la	\
+	libvtv.la
 do
 	%{__perl} %{SOURCE10} $RPM_BUILD_ROOT%{_libdir}/$f %{_libdir} > $RPM_BUILD_ROOT%{_libdir}/$f.fixed
 	mv $RPM_BUILD_ROOT%{_libdir}/$f{.fixed,}
@@ -484,8 +514,6 @@ rm -rf $RPM_BUILD_ROOT
 %postun	-p /usr/sbin/ldconfig -n libgcc
 %post	-p /usr/sbin/ldconfig -n libgomp
 %postun	-p /usr/sbin/ldconfig -n libgomp
-%post	-p /usr/sbin/ldconfig -n libmudflap
-%postun	-p /usr/sbin/ldconfig -n libmudflap
 %post	-p /usr/sbin/ldconfig -n libstdc++
 %postun	-p /usr/sbin/ldconfig -n libstdc++
 %post	-p /usr/sbin/ldconfig -n libgfortran
@@ -496,10 +524,18 @@ rm -rf $RPM_BUILD_ROOT
 %postun	-p /usr/sbin/ldconfig -n libgo
 %post	-p /usr/sbin/ldconfig -n libasan
 %postun	-p /usr/sbin/ldconfig -n libasan
+%post	-p /usr/sbin/ldconfig -n liblsan
+%postun	-p /usr/sbin/ldconfig -n liblsan
 %post	-p /usr/sbin/ldconfig -n libtsan
 %postun	-p /usr/sbin/ldconfig -n libtsan
+%post	-p /usr/sbin/ldconfig -n libubsan
+%postun	-p /usr/sbin/ldconfig -n libubsan
 %post	-p /usr/sbin/ldconfig -n libatomic
 %postun	-p /usr/sbin/ldconfig -n libatomic
+%post	-p /usr/sbin/ldconfig -n libcilkrts
+%postun	-p /usr/sbin/ldconfig -n libcilkrts
+%post	-p /usr/sbin/ldconfig -n libvtv
+%postun	-p /usr/sbin/ldconfig -n libvtv
 
 %files -f gcc.lang
 %defattr(644,root,root,755)
@@ -571,26 +607,6 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %{_libdir}/libgomp.a
 
-%files -n libmudflap
-%defattr(644,root,root,755)
-%attr(755,root,root) %ghost %{_libdir}/libmudflap.so.0
-%attr(755,root,root) %ghost %{_libdir}/libmudflapth.so.0
-%attr(755,root,root) %{_libdir}/libmudflap.so.*.*.*
-%attr(755,root,root) %{_libdir}/libmudflapth.so.*.*.*
-
-%files -n libmudflap-devel
-%defattr(644,root,root,755)
-%attr(755,root,root) %{_libdir}/libmudflap.so
-%attr(755,root,root) %{_libdir}/libmudflapth.so
-%{_libdir}/libmudflap.la
-%{_libdir}/libmudflapth.la
-%{gcclibdir}/include/mf-runtime.h
-
-%files -n libmudflap-static
-%defattr(644,root,root,755)
-%{_libdir}/libmudflap.a
-%{_libdir}/libmudflapth.a
-
 %files c++
 %defattr(644,root,root,755)
 %doc gcc/cp/{ChangeLog,NEWS}
@@ -618,6 +634,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/stdc++.h
 %{_includedir}/stdtr1c++.h
 %{_libdir}/libstdc++.la
+%{_libdir}/libsanitizer.spec
 %attr(755,root,root) %{_libdir}/libstdc++.so
 
 %files -n libstdc++-static
@@ -672,7 +689,7 @@ rm -rf $RPM_BUILD_ROOT
 %files -n libgo
 %defattr(644,root,root,755)
 %doc libgo/{LICENSE,PATENTS,README}
-%attr(755,root,root) %ghost %{_libdir}/libgo.so.4
+%attr(755,root,root) %ghost %{_libdir}/libgo.so.5
 %attr(755,root,root) %{_libdir}/libgo.so.*.*.*
 
 %files -n libgo-devel
@@ -683,8 +700,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -n libasan
 %defattr(644,root,root,755)
-%doc libsanitizer/ChangeLog* libsanitizer/LICENSE.TXT
-%attr(755,root,root) %ghost %{_libdir}/libasan.so.0
+%attr(755,root,root) %ghost %{_libdir}/libasan.so.1
 %attr(755,root,root) %{_libdir}/libasan.so.*.*.*
 
 %files -n libasan-devel
@@ -694,9 +710,18 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libasan.la
 
 %ifnarch %{ix86}
+%files -n liblsan
+%defattr(644,root,root,755)
+%attr(755,root,root) %ghost %{_libdir}/liblsan.so.0
+%attr(755,root,root) %{_libdir}/liblsan.so.*.*.*
+
+%files -n liblsan-devel
+%defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/liblsan.so
+%{_libdir}/liblsan.la
+
 %files -n libtsan
 %defattr(644,root,root,755)
-%doc libsanitizer/ChangeLog* libsanitizer/LICENSE.TXT
 %attr(755,root,root) %ghost %{_libdir}/libtsan.so.0
 %attr(755,root,root) %{_libdir}/libtsan.so.*.*.*
 
@@ -705,6 +730,16 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libtsan.so
 %{_libdir}/libtsan.la
 %endif
+
+%files -n libubsan
+%defattr(644,root,root,755)
+%attr(755,root,root) %ghost %{_libdir}/libubsan.so.0
+%attr(755,root,root) %{_libdir}/libubsan.so.*.*.*
+
+%files -n libubsan-devel
+%defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/libubsan.so
+%{_libdir}/libubsan.la
 
 %files -n libatomic
 %defattr(644,root,root,755)
@@ -716,4 +751,28 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libatomic.so
 %{_libdir}/libatomic.la
+
+%files -n libcilkrts
+%defattr(644,root,root,755)
+%doc libcilkrts/ChangeLog*
+%attr(755,root,root) %ghost %{_libdir}/libcilkrts.so.5
+%attr(755,root,root) %{_libdir}/libcilkrts.so.*.*.*
+
+%files -n libcilkrts-devel
+%defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/libcilkrts.so
+%{_libdir}/libcilkrts.la
+%{_libdir}/libcilkrts.spec
+%{gcclibdir}/include/cilk
+
+%files -n libvtv
+%defattr(644,root,root,755)
+%doc libvtv/ChangeLog*
+%attr(755,root,root) %ghost %{_libdir}/libvtv.so.0
+%attr(755,root,root) %{_libdir}/libvtv.so.*.*.*
+
+%files -n libvtv-devel
+%defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/libvtv.so
+%{_libdir}/libvtv.la
 
