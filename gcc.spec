@@ -1,18 +1,18 @@
 %bcond_with	bootstrap
 
 %define		mver	4.9
-%define		snap	20140820
+%define		snap	20141105
 
 Summary:	GNU Compiler Collection: the C compiler and shared files
 Name:		gcc
-Version:	4.9.1
+Version:	4.9.2
 Release:	1.%{snap}.1
 Epoch:		6
 License:	GPL v3+
 Group:		Development/Languages
 #Source0:	ftp://gcc.gnu.org/pub/gcc/releases/gcc-%{version}/%{name}-%{version}.tar.bz2
 Source0:	ftp://gcc.gnu.org/pub/gcc/snapshots/%{mver}-%{snap}/%{name}-%{mver}-%{snap}.tar.bz2
-# Source0-md5:	f801935766e791a71efe23e037f7e058
+# Source0-md5:	686e1ccebf10ebab5afb5e4800fd4211
 %if 0
 # for cross build
 Source1:	http://www.mpfr.org/mpfr-current/mpfr-3.1.1.tar.xz
@@ -556,6 +556,10 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{gcclibdir}/lto1
 %dir %{gcclibdir}/include
 
+%dir %{gcclibdir}/include/sanitizer
+%{gcclibdir}/include/sanitizer/common_interface_defs.h
+%{_libdir}/libsanitizer.spec
+
 %{gcclibdir}/crt*.o
 %{gcclibdir}/include/*.h
 %{gcclibdir}/libgcc.a
@@ -634,7 +638,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/stdc++.h
 %{_includedir}/stdtr1c++.h
 %{_libdir}/libstdc++.la
-%{_libdir}/libsanitizer.spec
 %attr(755,root,root) %{_libdir}/libstdc++.so
 
 %files -n libstdc++-static
@@ -708,6 +711,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libasan.so
 %{_libdir}/libasan_preinit.o
 %{_libdir}/libasan.la
+%{gcclibdir}/include/sanitizer/asan_interface.h
 
 %ifnarch %{ix86}
 %files -n liblsan
@@ -719,6 +723,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/liblsan.so
 %{_libdir}/liblsan.la
+%{gcclibdir}/include/sanitizer/lsan_interface.h
 
 %files -n libtsan
 %defattr(644,root,root,755)
