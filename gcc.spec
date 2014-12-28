@@ -1,4 +1,5 @@
-%bcond_with	bootstrap
+# based on PLD Linux spec git://git.pld-linux.org/packages/gcc.git
+%bcond_with	pass2
 
 %define		mver	4.9
 %define		snap	20141105
@@ -6,27 +7,28 @@
 Summary:	GNU Compiler Collection: the C compiler and shared files
 Name:		gcc
 Version:	4.9.2
-Release:	1.%{snap}.1
+Release:	1.%{snap}.3
 Epoch:		6
 License:	GPL v3+
 Group:		Development/Languages
 #Source0:	ftp://gcc.gnu.org/pub/gcc/releases/gcc-%{version}/%{name}-%{version}.tar.bz2
 Source0:	ftp://gcc.gnu.org/pub/gcc/snapshots/%{mver}-%{snap}/%{name}-%{mver}-%{snap}.tar.bz2
 # Source0-md5:	686e1ccebf10ebab5afb5e4800fd4211
-%if 0
+%if %{with pass2}
 # for cross build
-Source1:	http://www.mpfr.org/mpfr-current/mpfr-3.1.1.tar.xz
-# Source1-md5:	91d51c41fcf2799e4ee7a7126fc95c17
-Source2:	ftp://ftp.gnu.org/gnu/gmp/gmp-5.0.5.tar.xz
-# Source2-md5:	8aef50959acec2a1ad41d144ffe0f3b5
-Source3:	http://multiprecision.org/mpc/download/mpc-1.0.1.tar.gz
-# Source3-md5:	b32a2e1a3daa392372fbd586d1ed3679
+Source1:	http://www.mpfr.org/mpfr-current/mpfr-3.1.2.tar.xz
+# Source1-md5:	e3d203d188b8fe60bb6578dd3152e05c
+Source2:	ftp://ftp.gnu.org/gnu/gmp/gmp-6.0.0a.tar.xz
+# Source2-md5:	1e6da4e434553d2811437aa42c7f7c76
+Source3:	http://multiprecision.org/mpc/download/mpc-1.0.2.tar.gz
+# Source3-md5:	68fadff3358fb3e7976c7a398a0af4c3
 %endif
 Source10:	gcc-optimize-la.pl
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=21704
 Patch0:		%{name}-include.patch
 Patch1:		%{name}-filename-output.patch
 URL:		http://gcc.gnu.org/
+%if %{without pass2}
 BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	binutils
@@ -42,6 +44,12 @@ BuildRequires:	mpc-devel
 BuildRequires:	mpfr-devel
 BuildRequires:	texinfo
 BuildRequires:	zlib-devel
+%else
+BuildRequires:	libstdc++-bootstrap
+BuildConflicts:	gmp-devel
+BuildConflicts:	mpc-devel
+BuildConflicts:	mpfr-devel
+%endif
 Requires:	binutils
 Requires:	cpp = %{epoch}:%{version}-%{release}
 Requires:	libgcc = %{epoch}:%{version}-%{release}
@@ -53,6 +61,12 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %define		filterout	-fwrapv -fno-strict-aliasing -fsigned-char
 # FIXME: unresolved symbols
 %define		skip_post_check_so	'.*(libgo)\.so.*'
+
+%if %{with pass2}
+%define		no_install_post_strip   1
+%define		no_install_post_chrpath 1
+%define		_enable_debug_packages  0
+%endif
 
 %description
 A compiler aimed at integrating all the optimizations and features
@@ -342,17 +356,15 @@ This package contains development files for the GNU vtv libraries.
 %patch0 -p1
 %patch1 -p0
 
-%if 0
-# cross build
+%if %{with pass2}
 # undefined reference to `__stack_chk_guard'
 %{__sed} -i '/k prot/agcc_cv_libc_provides_ssp=yes' gcc/configure
-
 tar -xf %{SOURCE1}
-mv mpfr-3.1.1 mpfr
+mv mpfr-3.1.2 mpfr
 tar -xf %{SOURCE2}
-mv gmp-5.0.5 gmp
+mv gmp-6.0.0 gmp
 tar -xf %{SOURCE3}
-mv mpc-1.0.1 mpc
+mv mpc-1.0.2 mpc
 %endif
 
 # override snapshot version.
@@ -372,7 +384,6 @@ CFLAGS="%{rpmcflags}"		\
 CXXFLAGS="%{rpmcxxflags}"	\
 TEXCONFIG=false			\
 ../configure %{_target_platform}	\
-	--%{?with_bootstrap:en}%{!?with_bootstrap:dis}able-bootstrap	\
 	--infodir=%{_infodir}						\
 	--libdir=%{_libdir}						\
 	--libexecdir=%{_libdir}						\
@@ -382,16 +393,24 @@ TEXCONFIG=false			\
 	--with-local-prefix=%{_prefix}/local				\
 	--with-slibdir=%{_libdir}					\
 	--x-libraries=%{_libdir}					\
-	--disable-build-poststage1-with-cxx                             \
-	--disable-build-with-cxx                                        \
-	--disable-cld                                                   \
+	--disable-bootstrap						\
+	--disable-build-poststage1-with-cxx				\
+	--disable-build-with-cxx					\
+	--disable-cld							\
 	--disable-cloog-version-check					\
 	--disable-install-libiberty					\
-	--disable-libssp                                                \
-	--disable-libstdcxx-pch                                         \
-	--disable-libunwind-exceptions                                  \
+	--disable-libssp						\
+	--disable-libstdcxx-pch						\
+	--disable-libunwind-exceptions					\
 	--disable-multilib						\
 	--disable-werror						\
+%if %{with pass2}
+	--disable-libgomp						\
+	--disable-lto							\
+	--enable-languages="c,c++"					\
+	--with-mpfr-include=$(pwd)/../mpfr/src				\
+	--with-mpfr-lib=$(pwd)/mpfr/src/.libs				\
+%else
 	--enable-__cxa_atexit						\
 	--enable-checking=release					\
 	--enable-clocale=gnu						\
@@ -414,9 +433,6 @@ TEXCONFIG=false			\
 	--with-pkgversion="Freddix"					\
 	--with-system-zlib						\
 	--without-x
-%if 0
-	--with-mpfr-include=$(pwd)/../mpfr/src	\
-	--with-mpfr-lib=$(pwd)/mpfr/src/.libs
 %endif
 
 cd ..
@@ -443,8 +459,10 @@ ln -sf %{_bindir}/cpp $RPM_BUILD_ROOT/usr/lib/cpp
 ln -sf gcc $RPM_BUILD_ROOT%{_bindir}/cc
 echo ".so gcc.1" > $RPM_BUILD_ROOT%{_mandir}/man1/cc.1
 
+%if %{without pass2}
 ln -sf gfortran $RPM_BUILD_ROOT%{_bindir}/g95
 echo ".so gfortran.1" > $RPM_BUILD_ROOT%{_mandir}/man1/g95.1
+%endif
 
 # avoid -L poisoning in *.la. normalize libdir
 # to avoid propagation of unnecessary RPATHs by libtool
@@ -453,18 +471,21 @@ for f in \
 	libtsan.la	\
 	liblsan.la	\
 %endif
-	libasan.la	\
-	libatomic.la	\
-	libcilkrts.la	\
+%if %{without pass2}
 	libgfortran.la	\
 	libgo.la	\
 	libgomp.la	\
+%endif
+	libasan.la	\
+	libatomic.la	\
+	libcilkrts.la	\
 	libitm.la	\
 	libquadmath.la	\
 	libstdc++.la	\
 	libsupc++.la	\
 	libubsan.la	\
 	libvtv.la
+
 do
 	%{__perl} %{SOURCE10} $RPM_BUILD_ROOT%{_libdir}/$f %{_libdir} > $RPM_BUILD_ROOT%{_libdir}/$f.fixed
 	mv $RPM_BUILD_ROOT%{_libdir}/$f{.fixed,}
@@ -477,10 +498,11 @@ cp -p $RPM_BUILD_ROOT%{gcclibdir}/include-fixed/syslimits.h $RPM_BUILD_ROOT%{gcc
 
 %{__rm} $RPM_BUILD_ROOT%{_libdir}/libstdc++.so.*-gdb.py
 
+%if %{without pass2}
 %find_lang gcc
 %find_lang cpplib
-
 %find_lang libstdc\+\+
+%endif
 install libstdc++-v3/include/precompiled/* $RPM_BUILD_ROOT%{_includedir}
 
 %clean
@@ -537,7 +559,7 @@ rm -rf $RPM_BUILD_ROOT
 %post	-p /usr/sbin/ldconfig -n libvtv
 %postun	-p /usr/sbin/ldconfig -n libvtv
 
-%files -f gcc.lang
+%files %{!?with_pass2:-f gcc.lang}
 %defattr(644,root,root,755)
 %doc ChangeLog MAINTAINERS
 %doc gcc/{ChangeLog,ONEWS,README.Portability}
@@ -551,9 +573,11 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_slibdir}/libgcc_s.so
 %attr(755,root,root) %{_libdir}/libitm.so
 %attr(755,root,root) %{gcclibdir}/collect2
+%if %{without pass2}
 %attr(755,root,root) %{gcclibdir}/liblto_plugin.so*
 %attr(755,root,root) %{gcclibdir}/lto-wrapper
 %attr(755,root,root) %{gcclibdir}/lto1
+%endif
 %dir %{gcclibdir}/include
 
 %dir %{gcclibdir}/include/sanitizer
@@ -565,19 +589,21 @@ rm -rf $RPM_BUILD_ROOT
 %{gcclibdir}/libgcc.a
 %{gcclibdir}/libgcc_eh.a
 %{gcclibdir}/libgcov.a
+%if %{without pass2}
 %{gcclibdir}/plugin
+%endif
 %{gcclibdir}/specs
 
 %{_libdir}/libitm.la
 %{_libdir}/libitm.a
 %{_libdir}/libitm.spec
 
-%{_infodir}/gcc*
+%{!?with_pass2:%{_infodir}/gcc*}
 %{_mandir}/man1/cc.1*
 %{_mandir}/man1/gcc.1*
 %{_mandir}/man1/gcov.1*
 
-%files -n cpp -f cpplib.lang
+%files -n cpp %{!?with_pass2:-f cpplib.lang}
 %defattr(644,root,root,755)
 %dir %{_libdir}/gcc
 %dir %{_libdir}/gcc/%{_target_platform}
@@ -586,7 +612,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{gcclibdir}/cc1
 %attr(755,root,root) /usr/lib/cpp
 %{_mandir}/man1/cpp.1*
-%{_infodir}/cpp*
+%{!?with_pass2:%{_infodir}/cpp*}
 
 %files -n libgcc
 %defattr(644,root,root,755)
@@ -594,6 +620,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libitm.so.1
 %attr(755,root,root) %{_libdir}/libitm.so.*.*.*
 
+%if %{without pass2}
 %files -n libgomp
 %defattr(644,root,root,755)
 %attr(755,root,root) %ghost %{_libdir}/libgomp.so.?
@@ -610,6 +637,7 @@ rm -rf $RPM_BUILD_ROOT
 %files -n libgomp-static
 %defattr(644,root,root,755)
 %{_libdir}/libgomp.a
+%endif
 
 %files c++
 %defattr(644,root,root,755)
@@ -623,7 +651,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libsupc++.la
 %{_mandir}/man1/g++.1*
 
-%files -n libstdc++ -f libstdc++.lang
+%files -n libstdc++ %{!?with_pass2:-f libstdc++.lang}
 %defattr(644,root,root,755)
 %doc libstdc++-v3/{ChangeLog,README}
 %attr(755,root,root) %ghost %{_libdir}/libstdc++.so.?
@@ -644,6 +672,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %{_libdir}/libstdc++.a
 
+%if %{without pass2}
 %files fortran
 %defattr(644,root,root,755)
 %doc gcc/fortran/ChangeLog
@@ -666,6 +695,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc libgfortran/ChangeLog
 %attr(755,root,root) %ghost %{_libdir}/libgfortran.so.?
 %attr(755,root,root) %{_libdir}/libgfortran.so.*.*.*
+%endif
 
 %files -n libquadmath
 %defattr(644,root,root,755)
@@ -679,6 +709,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libquadmath.so
 %{_libdir}/libquadmath.la
 
+%if %{without pass2}
 %files go
 %defattr(644,root,root,755)
 %doc gcc/go/gofrontend/{LICENSE,PATENTS,README}
@@ -700,6 +731,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libgo.so
 %{_libdir}/libgo.la
 %{_libdir}/libgobegin.a
+%endif
 
 %files -n libasan
 %defattr(644,root,root,755)
