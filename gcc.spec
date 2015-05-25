@@ -2,18 +2,18 @@
 %bcond_with	pass2
 
 %define		mver	4.9
-%define		snap	20141105
+%define		snap	20150204
 
 Summary:	GNU Compiler Collection: the C compiler and shared files
 Name:		gcc
 Version:	4.9.2
-Release:	1.%{snap}.3
+Release:	1.%{snap}.1
 Epoch:		6
 License:	GPL v3+
 Group:		Development/Languages
 #Source0:	ftp://gcc.gnu.org/pub/gcc/releases/gcc-%{version}/%{name}-%{version}.tar.bz2
 Source0:	ftp://gcc.gnu.org/pub/gcc/snapshots/%{mver}-%{snap}/%{name}-%{mver}-%{snap}.tar.bz2
-# Source0-md5:	686e1ccebf10ebab5afb5e4800fd4211
+# Source0-md5:	5a59c19c4ff7acd3db7f8d94843f7f85
 %if %{with pass2}
 # for cross build
 Source1:	http://www.mpfr.org/mpfr-current/mpfr-3.1.2.tar.xz
